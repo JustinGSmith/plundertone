@@ -1,5 +1,11 @@
-default: clean
-	python3 py/yasunao.py && sox -x y_t.cdda y_t.wav && mplayer y_t.wav
+play: y_t.wav
+	mplayer y_t.wav
+
+y_t.wav: y_t.cdda
+	sox -x y_t.cdda y_t.wav
+
+y_t.cdda: py/yasunao.py resource/tone.wav
+	python3 py/yasunao.py
 
 clean:
-	rm -f y_t.m4a y_t.wav
+	rm -f *.m4a *.wav *.ogg *.raw *.cdda

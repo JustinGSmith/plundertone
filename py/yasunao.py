@@ -48,24 +48,54 @@ class StutterFlutters():
             self.source.read(buffer, dur)
             self.sink.write(buffer)
 
-def secs2bytes(n):
+def secs(n):
     return n*2*2*44100
 
-def process(source, sink):
-    # copy(source, sink, 240, pos=0)
-    in_point = secs2bytes(80)
-    source.seek(in_point)
+def _tro(source, sink):
+    pass
+
+def part_a(source, sink):
+    in_point = source.tell()
     reps = 256
     grain_step = 1024
     StutterFlutters(source, sink,
-                    punch_in=in_point, advance=grain_step,
-                    grain_duration=200, grain_delta=2.1).gen(reps)
+                    advance=grain_step, grain_duration=200, grain_delta=2.1
+                    ).gen(reps)
     in_point += grain_step*reps
     source.seek(in_point)
     StutterFlutters(source, sink,
-                    punch_in=in_point, advance=(grain_step * -1),
-                    grain_duration=2000, grain_delta=(1 / 2.1)).gen(reps)
+                    advance=(grain_step * -1), grain_duration=2000,
+                    grain_delta=(1 / 2.1)
+                    ).gen(reps)
+
+def part_b(source, sink):
+    pass
+
+def part_c(source, sink):
+    pass
+
+def process(source, sink):
+    source.seek(0)
+    _tro(source, sink)
+
+    source.seek(secs(10))
+    part_a(source, sink)
+
+    part_b(source, sink)
+
+    source.seek(secs(20))
+    part_a(source, sink)
+
+    part_b(source, sink)
+
+    part_c(source, sink)
+
+    source.seek(secs(30))
+    part_a(source, sink)
+
+    source.seek(secs(500))
+    _tro(source, sink)
 
 data_source = Reader("resource/tone.wav")
-data_sink = Writer("y_t.cdda.raw")
+data_sink = Writer("y_t.cdda")
 process(data_source, data_sink)
