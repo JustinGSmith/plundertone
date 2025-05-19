@@ -30,7 +30,6 @@ def granulate1 (l):
         grain = []
         for j in range(len(window)):
             grain.append(window[j] * buffered[i+j])
-        print("result:", result, " grain: ", grain, "\n")
         # overlap
         result[-1] += grain[0]
         result.extend(grain[1:])
