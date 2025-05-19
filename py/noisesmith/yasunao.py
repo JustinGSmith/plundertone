@@ -1,4 +1,5 @@
 import io
+from operator import and_, invert
 
 class Reader():
     def __init__(self, f):
@@ -14,7 +15,7 @@ class Reader():
             data.extend(chunk)
         return consumed
     def seek(self, offset):
-        return self.in_stream.seek(offset)
+        return self.in_stream.seek(int(offset))
     def tell(self):
         return self.in_stream.tell()
 
@@ -31,71 +32,29 @@ def copy(source, sink, count, pos=False):
     source.read(buffer, count)
     return sink.write(buffer)
 
-class StutterFlutters():
+# crude non-overlap granulation without windowing
+class CrudeGranulator():
     def __init__(self, source, sink, **params):
         self.source = source
         self.sink = sink
-        self.advance = params.pop('advance', 10)
+        self.input_step = params.pop('input_step', 10)
         self.grain_duration = params.pop('grain_duration', 10000)
         self.grain_delta = params.pop('grain_delta', 1)
     def gen(self, rep):
         start = self.source.tell()
         for i in range(rep):
-            forward = i*self.advance
+            forward = i*self.input_step
             self.source.seek(start + forward)
             dur = self.grain_duration + (i * self.grain_delta)
             buffer = []
             self.source.read(buffer, dur)
             self.sink.write(buffer)
 
+# truncate to a multiple of 4, so we don't flip byte order or swap channels
+# unintentionally (2 channels, 2 bytes per sample = 4 bytes per item)
+def align(n):
+    return and_(int(n), invert(3))
+
+# align is still useful here, because n can be a floating point value
 def secs(n):
-    return n*2*2*44100
-
-def _tro(source, sink):
-    pass
-
-def part_a(source, sink):
-    in_point = source.tell()
-    reps = 256
-    grain_step = 1024
-    StutterFlutters(source, sink,
-                    advance=grain_step, grain_duration=200, grain_delta=2.1
-                    ).gen(reps)
-    in_point += grain_step*reps
-    source.seek(in_point)
-    StutterFlutters(source, sink,
-                    advance=(grain_step * -1), grain_duration=2000,
-                    grain_delta=(1 / 2.1)
-                    ).gen(reps)
-
-def part_b(source, sink):
-    pass
-
-def part_c(source, sink):
-    pass
-
-def process(source, sink):
-    source.seek(0)
-    _tro(source, sink)
-
-    source.seek(secs(10))
-    part_a(source, sink)
-
-    part_b(source, sink)
-
-    source.seek(secs(20))
-    part_a(source, sink)
-
-    part_b(source, sink)
-
-    part_c(source, sink)
-
-    source.seek(secs(30))
-    part_a(source, sink)
-
-    source.seek(secs(500))
-    _tro(source, sink)
-
-data_source = Reader("resource/tone.wav")
-data_sink = Writer("y_t.cdda")
-process(data_source, data_sink)
+    return align(n*2*2*44100)
