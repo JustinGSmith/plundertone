@@ -1,3 +1,8 @@
+"""
+some minimal examples of granulating lists of data
+meant to demonstrate the basics of how granulation works
+"""
+
 data = [0, 1, 2, 3, 4, 5]
 
 def buffer(l):
