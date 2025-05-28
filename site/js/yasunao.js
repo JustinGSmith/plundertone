@@ -30,44 +30,28 @@ function onPlayerReady(event) {
   event.target.playVideo();
 }
 
-// The API calls this function when the player's state changes.
-// The function indicates that when playing a video (state=1),
-// the player should play for six seconds and then stop.
+var stutter_points = [
+  8000,
+  8125,
+  8250,
+  8375,
+  8500,
+  8750,
+  9000,
+  9250,
+  9500,
+  9250,
+  9500,
+  10000
+]
 
-function state_change(event, thunk) {
-    console.log("state change")
-    if (event.data == YT.PlayerState.PLAYING) {
-      console.log("queueing thunk from state_change.state_watch")
-      setTimeout(thunk, 1000);
-    } else {
-      console.log("waiting on state", event.data)
-    }
-}
-
-function stopVideo() {
-  player.stopVideo();
-}
-
-function stutter(step, limit, skip, skip_rate) {
-  console.log("defining stutter_thunk")
-  thunk = () => {
-    console.log("running stutter_thunk")
-    if(step < limit) {
-      console.log("stutter", step, limit, skip, skip_rate)
-      destination = (limit - step) * skip
-      player.seekTo(destination)
-    }
-    setTimeout(() => stutter(step++, limit, skip, skip_rate), skip_rate)
-  }
+function stutter() {
   if(player.getPlayerState() == YT.PlayerState.PLAYING) {
-    console.log("invoking stutter_thunk")
-    thunk()
-    } else {
-      console.log("queueing stutter_thunk")
-      // TODO - try making onPlayerStateChange an object with a continue method
-      // to call
-      window.onPlayerStateChange = (event) => state_change(event, thunk);
-      player.playVideo()
+    player.seekTo(stutter_points.peek())
+    setTimeout(stutter, 1000)
+  } else {
+    window.onPlayerStateChange = stutter
+    player.playVideo()
   }
 }
 
@@ -76,7 +60,7 @@ function main() {
   window.onPlayerStateChange = (event) => {
     if (ready && event.data == YT.PlayerState.PLAYING) {
       ready = false
-      state_change(event, (event) => stutter(0, 1000, 1000, 1000))
+      stutter
     }
   }
 }
