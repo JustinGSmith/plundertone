@@ -34,12 +34,14 @@ def copy(source, sink, count, pos=False):
 
 # crude non-overlap granulation without windowing
 class CrudeGranulator():
+
     def __init__(self, source, sink, **params):
         self.source = source
         self.sink = sink
         self.input_step = params.pop('input_step', 10)
         self.grain_duration = params.pop('grain_duration', 10000)
         self.grain_delta = params.pop('grain_delta', 1)
+
     def gen(self, rep):
         start = self.source.tell()
         for i in range(rep):
