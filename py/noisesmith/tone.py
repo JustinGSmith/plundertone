@@ -43,11 +43,23 @@ def part_a(source, sink):
                       grain_delta=(1 / 2.1)
                       ).gen(reps)
 
+# the noisy one
 def part_b(source, sink):
-    pass
+    in_point = source.tell()
+    # source.seek(in_point + 1)
+    y.CrudeGranulator(source, sink,
+                      input_step=512,
+                      grain_duration=3,
+                      grain_delta=7000).gen(60)
+    source.seek(y.align(in_point+2048))
 
 def part_c(source, sink):
-    pass
+    in_point = source.tell()
+    y.CrudeGranulator(source, sink,
+                      input_step=41.234,
+                      grain_duration=33.3,
+                      grain_delta=7.21).gen(200)
+    source.seek(y.align(in_point+256))
 
 def process(source, sink):
     skip_intro = y.secs(7.5)
@@ -56,7 +68,7 @@ def process(source, sink):
     # furthest forward traversal of input file during _tro
     _tro_duration = source.tell() - skip_intro
 
-    print("source at ", source.tell(), " after _tro\n")
+    # print("source at ", source.tell(), " after _tro\n")
     source.seek(y.secs(20))
     part_a(source, sink)
 
@@ -72,13 +84,13 @@ def process(source, sink):
     source.seek(y.secs(100))
     part_c(source, sink)
 
-    source.seek(y.secs(400))
+    source.seek(y.secs(250))
     part_a(source, sink)
 
     # cue so we consume to the end of the input
     # for now total duration of input is hardcoded and
     # must be changed for new input - ugh
-    cue_out = y.secs(352.314) - _tro_duration
+    cue_out = y.secs(302.314) - _tro_duration
     source.seek(cue_out)
     _tro(source, sink, -1)
 
